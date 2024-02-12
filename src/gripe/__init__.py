@@ -8,7 +8,6 @@ import pathlib
 import grip
 import psutil
 from flask import Flask, send_from_directory
-# from pynchon import cli
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from fleks.util import lme, typing  # noqa
@@ -48,8 +47,6 @@ def filter_pids(cmdline__contains: str = None, **kwargs):
             continue
     return survivors
 
-
-# from pynchon.util import lme, typing  # noqa
 
 LOGGER = lme.get_logger(__name__)
 THIS_PATH = pathlib.Path(".").absolute()
@@ -168,9 +165,10 @@ def _list():
                 port=get_port(proc),
             )
         )
-    from pynchon.util import text
-
-    print(text.to_json(result))
+    # from pynchon.util import text
+    import json 
+    print(json.dumps(result))
+    # print(text.to_json(result))
     return result
 
 
