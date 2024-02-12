@@ -13,7 +13,7 @@ SRC_ROOT := $(shell dirname ${THIS_MAKEFILE})
 NO_COLOR:=\033[0m
 COLOR_GREEN=\033[92m
 
-PYPI_PROJECT_NAME:=shil
+PYPI_PROJECT_NAME:=gripe
 
 .PHONY: build docs
 
