@@ -19,7 +19,15 @@
 
 ---------------------------------------------------------------------------------
 
-
+  * [Overview](#overview)
+  * [Features](#features)
+    * [Shell-formatters / pretty-printers](#shell-formatters--pretty-printers)
+    * [Subprocess Invocation](#subprocess-invocation)
+  * [Installation](#installation)
+  * [Usage (CLI)](#usage-cli)
+  * [Usage (API)](#usage-api)
+    * [OOP-style Dispatch](#oop-style-dispatch)
+    * [Loading data when command-output is JSON](#loading-data-when-command-output-is-json)
 
 
 ---------------------------------------------------------------------------------
@@ -44,7 +52,7 @@ The interface for `gripe` is hopefully unsurprising, and something that's conven
 
 The main goal is to provide an API that is simple and stable, without a ton of dependencies.
 
-```python
+```pycon
 >>> import gripe 
 >>> proc = gripe.invoke('echo hello world')
 >>> assert proc.succeeded
@@ -86,106 +94,13 @@ See also:
 
 This uses `gripe.Invocation` and returns `gripe.InvocationResponse`.
 
-```python
+```pycon
 >>> import gripe 
->>> req = cmd = gripe.Invocation(command='printf hello-world\n')
->>> resp = cmd()
->>> print(resp.stdout)
-hello-world
->>>
-```
-
-### Functional approach to dispatch
-
-Use `gripe.invoke`, get back `gripe.InvocationResponse` 
-
-```python
-
->>> import gripe 
->>> resp = gripe.invoke(command='printf hello-world\n')
->>> print(resp.stdout)
-hello-world
->>>
 ```
 
 ### Loading data when command-output is JSON
 
-```python
+```pycon
 >>> import gripe 
->>> cmd = gripe.Invocation(command="""echo '{"foo":"bar"}'""", load_json=True)
->>> resp = cmd()
->>> print(resp.data)
-{'foo': 'bar'}
->>> assert type(resp.data) == type({})
->>> assert resp.data['foo'] == 'bar'
->>>
-```
-
-### Serialization with Pydantic
-
-```python
->>> import json, gripe 
->>> req = cmd = gripe.Invocation(command="""echo pipes-are-allowed|grep allowed""")
->>> resp = cmd()
->>> keys = resp.dict().keys()
->>> expected = 'stdout stderr failed failure success succeeded data'.split()
->>> assert all([k in keys for k in expected])
->>>
-```
-
-### Caller determines logging 
-
-Works like this with basic logger:
-
-```python
->>> import logging, gripe 
->>> logger = logging.getLogger()
->>> resp = gripe.invoke('ls /tmp', command_logger=logger.critical, output_logger=logger.warning)
->>>
-```
-
-Supports using [rich-logger](https://rich.readthedocs.io/en/stable/logging.html) too:
-
-```python
->>> import gripe 
->>> from rich.console import Console 
->>> console = Console(stderr=True)
->>> resp = gripe.invoke('ls /tmp', command_logger=console.log)
->>>
-```
-
-### Rich-console Support
-
-Besides using rich-logger as above, you can use the [rich-protocol](https://rich.readthedocs.io/en/stable/protocol.html) more directly.  
-
-Printing works the way you'd expect for `Invocation` and `InvocationResponse`.
-
-```python
-import rich
-
-import gripe
-
-req = cmd = gripe.Invocation(command='echo {"foo":"bar"}')
-resp = cmd()
-rich.print(req)
-rich.print(resp)
-```
-By default, output looks roughly like this:
-
-![rich console](https://raw.githubusercontent.com/elo-enterprises/gripe/master/img/rich-1.png)
-<br/>
-![rich console](https://raw.githubusercontent.com/elo-enterprises/gripe/master/img/rich-2.png)
-
-### Stay DRY with Runners
-
-Runner's are basically just [partials](https://en.wikipedia.org/wiki/Partial_application) on `gripe.invoke`.  It's simple but this can help reduce copying around repetitive configuration.
-
-```python
->>> import gripe 
->>> from rich.console import Console 
->>> console=Console(stderr=True)
->>> runner = gripe.Runner(output_logger=console.log, command_logger=console.log)
->>> resp = runner('ls /tmp')
->>> assert isinstance(resp,(gripe.InvocationResult,))
->>>
+>>> 
 ```

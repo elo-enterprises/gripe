@@ -10,8 +10,8 @@ import psutil
 from flask import Flask, send_from_directory
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-from fleks.util import lme, typing  # noqa
 from fleks.cli import click  # noqa
+from fleks.util import lme, typing  # noqa
 
 LOGGER = lme.get_logger(__name__)
 
@@ -154,21 +154,18 @@ app = server.app
 def _list():
     """Lists running all running servers"""
     result = dict(local=[], foreign=[])
-    # raise Exception(_current_gripe_procs())
     for proc in _current_gripe_procs():
         key = "local" if _is_my_grip(proc.as_dict()) else "foreign"
         result[key].append(
             dict(
                 pid=proc.pid,
                 cwd=proc.cwd(),
-                # cmdline=' '.join(proc.cmdline()),
                 port=get_port(proc),
             )
         )
-    # from pynchon.util import text
-    import json 
+    import json
+
     print(json.dumps(result))
-    # print(text.to_json(result))
     return result
 
 

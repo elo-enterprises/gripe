@@ -1,14 +1,18 @@
 """
 """
+
 from fleks.cli import click  # noqa
+
 
 @click.group
 def entry():
     """
     CLI for actions on gripe servers.
     """
-from gripe import (
-    restart, stop, _list, start)
+
+
+from gripe import _list, restart, start, stop
+
 entry.command("restart")(restart)
 entry.command("stop")(stop)
 entry.command("ls")(_list)

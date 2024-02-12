@@ -1,6 +1,7 @@
 """ tests for `gripe` CLI
 """
-TEST_INFO = testing.get_test_info(__file__)
+
+# TEST_INFO = testing.get_test_info(__file__)
 
 TEST_CMDS = [
     "python -m gripe --version",
