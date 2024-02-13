@@ -14,6 +14,10 @@ from fleks.cli import click  # noqa
 from fleks.util import lme, typing  # noqa
 
 LOGGER = lme.get_logger(__name__)
+THIS_PATH = pathlib.Path(".").absolute()
+DEFAULT_LOG_FILE: str = ".tmp.gripe.log"
+FLASK_GRIPE_APP = "gripe:app"
+DEFAULT_PORT = "6149"
 
 
 def filter_pids(cmdline__contains: str = None, **kwargs):
@@ -48,12 +52,6 @@ def filter_pids(cmdline__contains: str = None, **kwargs):
     return survivors
 
 
-LOGGER = lme.get_logger(__name__)
-THIS_PATH = pathlib.Path(".").absolute()
-logfile: str = ".tmp.gripe.log"
-FLASK_GRIPE_APP = "pynchon.gripe:app"
-
-
 class PortBusy(RuntimeError):
     pass
 
@@ -74,32 +72,25 @@ def get_port(proc):
 
 
 def _used_ports():
-    """
-    :param :
-    """
-    return list(filter(None, [get_port(p) for p in _current_gripe_procs()]))
+    """ """
+    return [x for x in filter(None, [get_port(p) for p in _current_gripe_procs()])]
 
 
-def _do_serve(background=True, port="6149"):
-    """
-    :param port='6149':
-    :param background=True:
-    """
+def _do_serve(background=True, port=DEFAULT_PORT):
+    """ """
     bg = "&" if background else ""
     port = int(port)
     port_used = port in _used_ports()
     if port_used:
         raise PortBusy(f"port {port} is in use!")
-    cmd = f"flask --app {FLASK_GRIPE_APP} run --port {port} >> {logfile} 2>&1 {bg}"
+    cmd = f"flask --app {FLASK_GRIPE_APP} run --port {port} >> {DEFAULT_LOG_FILE} 2>&1 {bg}"
     LOGGER.critical("starting server with command:")
     LOGGER.critical(f"  '{cmd}'")
     return os.system(cmd)
 
 
-def _is_my_grip(g) -> bool:
-    """
-    :param g) -> boo:
-    """
+def _is_my_grip(g: dict) -> bool:
+    """ """
     return g["cwd"] == str(THIS_PATH)
 
 
@@ -183,7 +174,7 @@ def start(
     fg: bool = None, ls: bool = None, force: bool = None, port: str = None
 ) -> object:
     """Starts a webserver for working-dir"""
-
+    port = port or DEFAULT_PORT
     LOGGER.critical("trying to serve files")
     result = None
     background = not fg
@@ -226,23 +217,39 @@ def start(
     return result
 
 
-def stop(grips=[], grip=None):
+DictMaybe = typing.Union[typing.Dict, None]
+
+
+def stop(
+    grip: DictMaybe = None,
+    grips=[],
+):
     """Stops server (if any) for this working-dir"""
-    grips = grips or (grip and [grip]) or _list()
+    grips = grips or (grip and [grip]) or _list()["local"]
+    killed = []
     if not grips:
-        LOGGER.critical("no copies of gripe are started here")
+        LOGGER.critical("No daemons for `gripe` are started here")
     else:
-        for p in grips:
-            if _is_my_grip(p):
-                LOGGER.critical(f"gripe @ pid {p.pid} started here")
+        for dct in grips:
+            if _is_my_grip(dct):
+                LOGGER.critical(f"gripe @ {dct} started here")
                 LOGGER.critical("killing it..")
-                p.kill()
-    return True
+                for proc in _current_gripe_procs():
+                    if proc.pid == dct["pid"]:
+                        proc.kill()
+                        killed.append(dct)
+    return dict(killed=killed)
+
+
+DEFAULT_SLEEP = 1.5  # in seconds
 
 
 def restart():
     """Restarts server for this working-dir"""
     _list()
     stop()
-    time.sleep(1.5)
+    time.sleep(DEFAULT_SLEEP)
     start()
+
+
+list = _list

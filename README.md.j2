@@ -10,7 +10,7 @@
   <tr>
     <td width=15%><img src={{github.raw_url}}/master/img/icon.png style="width:150px"></td>
     <td>
-      Opinionated extensions for the `grip` utility.  <br/>
+      Opinionated extensions for the `grip` utility.  <br/><br/>
       The <a href=https://pypi.org/project/grip/>grip utility</a> provides rendering/serving local markdown files written in github-flavored markdown.  Gripe extends it, allowing for serving more types of local files, as well as intelligent management for multiple `grip` daemons.
       <br/>
     </td>
@@ -36,7 +36,7 @@ The <a href=https://pypi.org/project/grip/>grip utility</a> provides rendering/s
 
 ### Support for Multiple Projects
 
-Working with multiple projects simultaneously is supported.  (This works by managing multiple daemons with a per-project port)
+Working with multiple projects simultaneously is supported.  This works by managing multiple daemons with a per-project port. See [CLI Usage](#cli-usage) for more information.  
 
 ---------------------------------------------------------------------------------
 
@@ -55,6 +55,13 @@ $ pip install gripe
 The gripe library publishes a small CLI tool.
 
 ### Listing Servers 
+
+```bash
+
+# or `gripe ls` or `python -mgripe ls`
+$ gripe list 
+```
+
 ### Starting and Stopping Servers 
 
 -------------------------------------------------------------------------------
@@ -62,8 +69,31 @@ The gripe library publishes a small CLI tool.
 ## Usage (API)
 
 ### Listing Servers 
+
+```pycon
+>>> import gripe 
+>>> gripe.list()
+{"local": [], "foreign": []}
+```
+
 ### Starting and Stopping Servers 
 
 ```pycon
 >>> import gripe 
+
+>>> servers = gripe.start(); print(servers)
+{ "local": [
+    { "pid": 93867, 
+      "cwd": "...", 
+      "port": 6149 }
+  ], 
+  "foreign": []
+}
+
+>>> gripe.stop(grips=servers['local'])
+{"killed": 
+  [ { "pid": 93867, 
+      "cwd": "...", 
+      "port": 6149 } ]
+}
 ```
