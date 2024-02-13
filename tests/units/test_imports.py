@@ -1,7 +1,6 @@
-"""
+""" unit test suite
 """
 
 
 def test_imports():
-    from gripe import Server, app, server  # noqa
-    # from gripe import __version__  # noqa: F401
+    from gripe import Server, server  # noqa

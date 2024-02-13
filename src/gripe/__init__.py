@@ -2,54 +2,26 @@
 """
 
 import os
+import json
 import time
 import pathlib
 
 import grip
 import psutil
 from flask import Flask, send_from_directory
+from fleks.cli import click
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-from fleks.cli import click  # noqa
 from fleks.util import lme, typing  # noqa
 
+DEFAULT_PORT = "6149"
+DEFAULT_SLEEP = 1.5  # in seconds
+DEFAULT_APP_NAME = "gripe:app"
+DEFAULT_LOG_FILE: str = ".tmp.gripe.log"
 LOGGER = lme.get_logger(__name__)
 THIS_PATH = pathlib.Path(".").absolute()
-DEFAULT_LOG_FILE: str = ".tmp.gripe.log"
-FLASK_GRIPE_APP = "gripe:app"
-DEFAULT_PORT = "6149"
 
-
-def filter_pids(cmdline__contains: str = None, **kwargs):
-    """ """
-    procs = []
-    for p in psutil.pids():
-        try:
-            procs.append(psutil.Process(p))
-        except (psutil.NoSuchProcess,) as exc:
-            LOGGER.critical(exc)
-    survivors = []
-    for p in procs:
-        try:
-            # special filters
-            if cmdline__contains:
-                cmdline = " ".join(p.cmdline())
-                if cmdline__contains not in cmdline:
-                    continue
-            # normal filters
-            for k, v in kwargs.items():
-                tmp = getattr(p, k)
-                if callable(tmp):
-                    tmp = tmp()
-                if v != tmp:
-                    break
-            else:
-                survivors.append(p)
-        except (psutil.AccessDenied,):
-            continue
-        except (psutil.NoSuchProcess,):
-            continue
-    return survivors
+from .util import filter_pids
 
 
 class PortBusy(RuntimeError):
@@ -58,7 +30,7 @@ class PortBusy(RuntimeError):
 
 def _current_gripe_procs() -> typing.List[psutil.Process]:
     """ """
-    return filter_pids(cmdline__contains=FLASK_GRIPE_APP)
+    return filter_pids(cmdline__contains=DEFAULT_APP_NAME)
 
 
 def get_port(proc):
@@ -83,15 +55,15 @@ def _do_serve(background=True, port=DEFAULT_PORT):
     port_used = port in _used_ports()
     if port_used:
         raise PortBusy(f"port {port} is in use!")
-    cmd = f"flask --app {FLASK_GRIPE_APP} run --port {port} >> {DEFAULT_LOG_FILE} 2>&1 {bg}"
+    cmd = f"flask --app {DEFAULT_APP_NAME} run --port {port} >> {DEFAULT_LOG_FILE} 2>&1 {bg}"
     LOGGER.critical("starting server with command:")
     LOGGER.critical(f"  '{cmd}'")
     return os.system(cmd)
 
 
-def _is_my_grip(g: dict) -> bool:
+def _is_my_grip(proc_dict: dict) -> bool:
     """ """
-    return g["cwd"] == str(THIS_PATH)
+    return proc_dict["cwd"] == str(THIS_PATH)
 
 
 class Server:
@@ -100,7 +72,7 @@ class Server:
     @property
     def proc(self) -> psutil.Process:
         """ """
-        tmp = [g for g in _current_gripe_procs() if _is_my_grip(g.as_dict())]
+        tmp = [proc for proc in _current_gripe_procs() if _is_my_grip(proc.as_dict())]
         if tmp:
             result = tmp[0]
             return result
@@ -139,7 +111,10 @@ class Server:
 
 
 server = Server()
-app = server.app
+
+# WARNING: this initiates real flask bootstrap,
+# for which `grip` expects README.md to already be available
+# app = server.app
 
 
 def _list():
@@ -154,8 +129,6 @@ def _list():
                 port=get_port(proc),
             )
         )
-    import json
-
     print(json.dumps(result))
     return result
 
@@ -239,9 +212,6 @@ def stop(
                         proc.kill()
                         killed.append(dct)
     return dict(killed=killed)
-
-
-DEFAULT_SLEEP = 1.5  # in seconds
 
 
 def restart():

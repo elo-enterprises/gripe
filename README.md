@@ -79,22 +79,22 @@ $ gripe list
 ```bash
 
 # or `python -mgripe start`
-$ gripe start 
-INFO gripe Trying to serve files                                     
-DEBUG gripe Starting gripe for this project..                        
-DEBUG gripe Used ports: []                                           
-INFO gripe starting server with command:               
+$ gripe start
+INFO gripe Trying to serve files                        
+DEBUG gripe Starting gripe for this project..
+DEBUG gripe Used ports: []                             
+INFO gripe starting server with command:
 INFO gripe 'flask --app gripe:app run 
   --port 6149 >> .tmp.gripe.log 2>&1 &'
 
 $ gripe start
-INFO gripe Trying to serve files                                     
-INFO gripe 1 copies of gripe are already started                   
-INFO gripe gripe @ pid `10059` is already serving this project    
+INFO gripe Trying to serve files                     
+INFO gripe 1 copies of gripe are already started     
+INFO gripe gripe @ pid `10059` is already serving this project
 INFO gripe Skipping startup.
 
 
-$ gripe stop 
+$ gripe stop
 INFO gripe gripe @ {'pid': 10059, 'cwd':'...', 'port': 6149} started here
 INFO gripe killing it..
 ```
