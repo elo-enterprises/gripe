@@ -39,7 +39,7 @@ The `gripe` library provides extensions for [grip](https://pypi.org/project/grip
 
 The <a href=https://pypi.org/project/grip/>grip utility</a> provides rendering/serving local markdown files written in github-flavored markdown.  
 
-Gripe extends it, allowing for serving more types of local files, as well as intelligent management for multiple `grip` daemons.
+Gripe extends it, allowing for serving more types of local files, as well as intelligent management for multiple `grip` daemons without thinking about server-port collisions.
 
 -------------------------------------------------------------------------------
 
@@ -84,15 +84,25 @@ INFO gripe Trying to serve files
 DEBUG gripe Starting gripe for this project..
 DEBUG gripe Used ports: []                             
 INFO gripe starting server with command:
-INFO gripe 'flask --app gripe:app run 
-  --port 6149 >> .tmp.gripe.log 2>&1 &'
+INFO gripe 'flask --app gripe:app run --port 6149 >> .tmp.gripe.log 2>&1 &'
 
+# startup example for a 2nd server over the same project: server start is NO-OP
 $ gripe start
 INFO gripe Trying to serve files                     
 INFO gripe 1 copies of gripe are already started     
 INFO gripe gripe @ pid `10059` is already serving this project
 INFO gripe Skipping startup.
 
+# startup example for 2nd server over 2nd project: new port allocated automatically
+$ gripe start
+INFO gripe trying to serve files
+INFO gripe 1 copies of gripe are already started
+INFO gripe No gripes are serving this project.
+DEBUG  gripe Starting gripe for this project..
+DEBUG  gripe Used ports: [6149]
+DEBUG gripe server port @ 6149, using next available @ 6150
+INFO gripe starting server with command:
+INFO gripe   'flask --app gripe:app run --port 6150 >> .tmp.gripe.log 2>&1 &'
 
 $ gripe stop
 INFO gripe gripe @ {'pid': 10059, 'cwd':'...', 'port': 6149} started here
