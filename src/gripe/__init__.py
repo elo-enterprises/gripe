@@ -114,7 +114,11 @@ server = Server()
 
 # WARNING: this initiates real flask bootstrap,
 # for which `grip` expects README.md to already be available
-# app = server.app
+try:
+    app = server.app
+except (Exception,) as exc:
+    LOGGER.critical(exc)
+    app = None
 
 
 def _list():
